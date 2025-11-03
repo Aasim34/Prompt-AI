@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/generator", label: "Generator" },
+  { href: "/analyzer", label: "Analyzer" },
   { href: "/examples", label: "Examples" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },

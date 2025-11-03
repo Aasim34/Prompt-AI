@@ -14,9 +14,10 @@ interface PromptOutputProps {
   prompt: string;
   isLoading: boolean;
   setPrompt: (prompt: string) => void;
+  disableRefine?: boolean;
 }
 
-export function PromptOutput({ prompt, isLoading, setPrompt }: PromptOutputProps) {
+export function PromptOutput({ prompt, isLoading, setPrompt, disableRefine = false }: PromptOutputProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const { toast } = useToast();
@@ -36,7 +37,7 @@ export function PromptOutput({ prompt, isLoading, setPrompt }: PromptOutputProps
     a.href = url;
     a.download = "prompt.txt";
     document.body.appendChild(a);
-    a.click();
+a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
@@ -65,7 +66,7 @@ export function PromptOutput({ prompt, isLoading, setPrompt }: PromptOutputProps
     <Card className={cn("h-full flex flex-col", (prompt || isLoading) && "prompt-glow")}>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span>Generated Framework</span>
+          <span>{disableRefine ? "Analysis Result" : "Generated Framework"}</span>
           {(prompt && !isLoading) && (
             <div className="flex items-center gap-2">
               <Button
@@ -106,10 +107,12 @@ export function PromptOutput({ prompt, isLoading, setPrompt }: PromptOutputProps
         ) : prompt ? (
           <div className="flex-grow flex flex-col justify-between">
             <FormattedPrompt prompt={prompt} />
-            <Button onClick={onRefine} disabled={isRefining} className="mt-4 w-full">
-              <Sparkles className="mr-2 h-4 w-4" />
-              {isRefining ? 'Refining...' : 'Refine with AI'}
-            </Button>
+            {!disableRefine && (
+              <Button onClick={onRefine} disabled={isRefining} className="mt-4 w-full">
+                <Sparkles className="mr-2 h-4 w-4" />
+                {isRefining ? 'Refining...' : 'Refine with AI'}
+              </Button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full border border-dashed rounded-lg p-8">
