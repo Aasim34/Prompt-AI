@@ -29,11 +29,44 @@ const refinePrompt = ai.definePrompt({
   name: 'refinePrompt',
   input: {schema: RefineGeneratedPromptInputSchema},
   output: {schema: RefineGeneratedPromptOutputSchema},
-  prompt: `You are an expert prompt engineer. Your task is to refine the given prompt to make it more effective for large language models.
+  prompt: `You are a professional Prompt Analyzer and Optimizer AI.
+Your task is to analyze, score, and improve any prompt that the user provides.
 
-Original Prompt: {{{initialPrompt}}}
+Follow these steps strictly:
 
-Refined Prompt:`, // Keep it open-ended to allow for creative prompt engineering
+1. **Read the user's prompt carefully.**
+2. **Give a detailed analysis** of how strong the prompt is.
+3. **Provide a numeric score (0–100)** based on:
+   - Clarity and Specificity (0–25)
+   - Completeness and Context (0–25)
+   - Creativity and Originality (0–25)
+   - Goal Relevance and Actionability (0–25)
+4. **List the Missing or Weak Points** — what the user can improve (e.g., lack of detail, unclear goals, missing output format).
+5. **Enhance the Prompt** — rewrite it to be more detailed, clear, and effective while keeping the same intent.
+6. **Format your response** like this:
+
+---
+🧩 **Prompt Analysis**
+{Explain your evaluation briefly}
+
+🎯 **Prompt Score:** {total}/100
+• Clarity: {}/25
+• Completeness: {}/25
+• Creativity: {}/25
+• Goal Relevance: {}/25
+
+⚠️ **Missing or Weak Points**
+- Point 1
+- Point 2
+- Point 3
+
+✨ **Enhanced Prompt**
+"Your improved prompt goes here..."
+---
+
+Now, analyze this user prompt:
+
+"{{{initialPrompt}}}"`,
 });
 
 const refineGeneratedPromptFlow = ai.defineFlow(
