@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { handleRefinePrompt } from "@/app/generator/actions";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "../ui/skeleton";
+import { FormattedPrompt } from "./formatted-prompt";
 
 interface PromptOutputProps {
   prompt: string;
@@ -93,7 +94,7 @@ export function PromptOutput({ prompt, isLoading, setPrompt }: PromptOutputProps
       </CardHeader>
       <CardContent className="flex-grow flex flex-col">
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-4 p-4">
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
@@ -104,9 +105,7 @@ export function PromptOutput({ prompt, isLoading, setPrompt }: PromptOutputProps
           </div>
         ) : prompt ? (
           <div className="flex-grow flex flex-col justify-between">
-            <pre className="whitespace-pre-wrap text-sm text-foreground font-sans flex-grow bg-secondary/50 p-4 rounded-md">
-              {prompt}
-            </pre>
+            <FormattedPrompt prompt={prompt} />
             <Button onClick={onRefine} disabled={isRefining} className="mt-4 w-full">
               <Sparkles className="mr-2 h-4 w-4" />
               {isRefining ? 'Refining...' : 'Refine with AI'}
