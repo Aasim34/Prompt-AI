@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
   { href: "/generator", label: "Generator" },
@@ -85,8 +86,9 @@ export function Header() {
             <Bot className="h-6 w-6 text-primary" />
             <span className="font-bold">PromptForge AI</span>
           </Link>
-          <nav className="hidden md:flex items-center">
-            <Button>
+          <nav className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button className="hidden md:inline-flex">
               <Link href="/generator">Get Started</Link>
             </Button>
           </nav>
