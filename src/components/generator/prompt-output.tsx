@@ -64,7 +64,7 @@ export function PromptOutput({ prompt, isLoading, setPrompt }: PromptOutputProps
     <Card className={cn("h-full flex flex-col", (prompt || isLoading) && "prompt-glow")}>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span>Generated Prompt</span>
+          <span>Generated Framework</span>
           {(prompt && !isLoading) && (
             <div className="flex items-center gap-2">
               <Button
