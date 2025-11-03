@@ -7,6 +7,7 @@ import {
 import {
   refineGeneratedPrompt,
   RefineGeneratedPromptInput,
+  RefineGeneratedPromptOutput,
 } from "@/ai/flows/refine-generated-prompt";
 
 export async function handleGeneratePrompt(
@@ -14,7 +15,8 @@ export async function handleGeneratePrompt(
 ): Promise<{ success: boolean; prompt?: string; error?: string }> {
   try {
     const result = await generateInitialPrompt(input);
-    return { success: true, prompt: result.prompt };
+    const fullPrompt = `**Goal:** ${input.goalType}\n\n${result.prompt}`;
+    return { success: true, prompt: fullPrompt };
   } catch (e: any) {
     console.error("Error generating prompt:", e);
     return { success: false, error: e.message || "Failed to generate prompt. Please try again." };
@@ -26,9 +28,37 @@ export async function handleRefinePrompt(
 ): Promise<{ success: boolean; prompt?: string; error?: string }> {
   try {
     const result = await refineGeneratedPrompt(input);
-    return { success: true, prompt: result.refinedPrompt };
+    const formattedResponse = `---
+🧩 **Prompt Analysis**
+${result.analysis}
+
+🎯 **Prompt Score:** ${result.score}/100
+• Clarity: ${result.clarity}/25
+• Completeness: ${result.completeness}/25
+• Creativity: ${result.creativity}/25
+• Goal Relevance: ${result.goalRelevance}/25
+
+⚠️ **Missing or Weak Points**
+${result.weakPoints.map(p => `- ${p}`).join('\n')}
+
+✨ **Enhanced Prompt**
+"${result.enhancedPrompt}"
+---`;
+    return { success: true, prompt: formattedResponse };
   } catch (e: any) {
     console.error("Error refining prompt:", e);
     return { success: false, error: e.message || "Failed to refine prompt. Please try again." };
+  }
+}
+
+export async function handleAnalyzePrompt(
+  input: RefineGeneratedPromptInput
+): Promise<{ success: boolean; analysis?: RefineGeneratedPromptOutput; error?: string }> {
+  try {
+    const result = await refineGeneratedPrompt(input);
+    return { success: true, analysis: result };
+  } catch (e: any) {
+    console.error("Error analyzing prompt:", e);
+    return { success: false, error: e.message || "Failed to analyze prompt. Please try again." };
   }
 }

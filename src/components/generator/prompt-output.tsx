@@ -37,7 +37,7 @@ export function PromptOutput({ prompt, isLoading, setPrompt, disableRefine = fal
     a.href = url;
     a.download = "prompt.txt";
     document.body.appendChild(a);
-a.click();
+    a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
@@ -61,6 +61,18 @@ a.click();
       });
     }
   };
+
+  const FullPrompt = () => (
+    <div className="flex-grow flex flex-col justify-between">
+      <FormattedPrompt prompt={prompt} />
+      {!disableRefine && (
+        <Button onClick={onRefine} disabled={isRefining} className="mt-4 w-full">
+          <Sparkles className="mr-2 h-4 w-4" />
+          {isRefining ? 'Refining...' : 'Refine with AI'}
+        </Button>
+      )}
+    </div>
+  );
 
   return (
     <Card className={cn("h-full flex flex-col", (prompt || isLoading) && "prompt-glow")}>
@@ -105,15 +117,7 @@ a.click();
             <Skeleton className="h-4 w-full" />
           </div>
         ) : prompt ? (
-          <div className="flex-grow flex flex-col justify-between">
-            <FormattedPrompt prompt={prompt} />
-            {!disableRefine && (
-              <Button onClick={onRefine} disabled={isRefining} className="mt-4 w-full">
-                <Sparkles className="mr-2 h-4 w-4" />
-                {isRefining ? 'Refining...' : 'Refine with AI'}
-              </Button>
-            )}
-          </div>
+          <FullPrompt />
         ) : (
           <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full border border-dashed rounded-lg p-8">
             <Bot className="h-12 w-12 mb-4" />

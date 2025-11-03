@@ -17,8 +17,16 @@ const RefineGeneratedPromptInputSchema = z.object({
 export type RefineGeneratedPromptInput = z.infer<typeof RefineGeneratedPromptInputSchema>;
 
 const RefineGeneratedPromptOutputSchema = z.object({
-  refinedPrompt: z.string().describe('The AI-refined prompt.'),
+  analysis: z.string().describe('A detailed analysis of how strong the prompt is.'),
+  score: z.string().describe('The total numeric score (0-100).'),
+  clarity: z.string().describe('Clarity and Specificity score (0-25).'),
+  completeness: z.string().describe('Completeness and Context score (0-25).'),
+  creativity: z.string().describe('Creativity and Originality score (0-25).'),
+  goalRelevance: z.string().describe('Goal Relevance and Actionability score (0-25).'),
+  weakPoints: z.array(z.string()).describe('A list of missing or weak points.'),
+  enhancedPrompt: z.string().describe('The rewritten, enhanced prompt.'),
 });
+
 export type RefineGeneratedPromptOutput = z.infer<typeof RefineGeneratedPromptOutputSchema>;
 
 export async function refineGeneratedPrompt(input: RefineGeneratedPromptInput): Promise<RefineGeneratedPromptOutput> {
@@ -35,34 +43,14 @@ Your task is to analyze, score, and improve any prompt that the user provides.
 Follow these steps strictly:
 
 1. **Read the user's prompt carefully.**
-2. **Give a detailed analysis** of how strong the prompt is.
-3. **Provide a numeric score (0–100)** based on:
+2. **Provide a detailed analysis** of how strong the prompt is.
+3. **Provide numeric scores** based on:
    - Clarity and Specificity (0–25)
    - Completeness and Context (0–25)
    - Creativity and Originality (0–25)
    - Goal Relevance and Actionability (0–25)
 4. **List the Missing or Weak Points** — what the user can improve (e.g., lack of detail, unclear goals, missing output format).
 5. **Enhance the Prompt** — rewrite it to be more detailed, clear, and effective while keeping the same intent.
-6. **Format your response** like this:
-
----
-🧩 **Prompt Analysis**
-{Explain your evaluation briefly}
-
-🎯 **Prompt Score:** {total}/100
-• Clarity: {}/25
-• Completeness: {}/25
-• Creativity: {}/25
-• Goal Relevance: {}/25
-
-⚠️ **Missing or Weak Points**
-- Point 1
-- Point 2
-- Point 3
-
-✨ **Enhanced Prompt**
-"Your improved prompt goes here..."
----
 
 Now, analyze this user prompt:
 
