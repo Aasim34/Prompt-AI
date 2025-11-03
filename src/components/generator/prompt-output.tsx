@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Copy, Download, Sparkles } from "lucide-react";
+import { Bot, Check, Copy, Download, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { handleRefinePrompt } from "@/app/generator/actions";
 import { cn } from "@/lib/utils";
