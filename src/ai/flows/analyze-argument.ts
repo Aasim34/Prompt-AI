@@ -11,12 +11,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzeArgumentInputSchema = z.object({
+const AnalyzeArgumentInputSchema = z.object({
   text: z.string().describe('The text containing the argument to be analyzed.'),
 });
 export type AnalyzeArgumentInput = z.infer<typeof AnalyzeArgumentInputSchema>;
 
-export const AnalyzeArgumentOutputSchema = z.object({
+const AnalyzeArgumentOutputSchema = z.object({
   analysisSummary: z
     .string()
     .describe('A brief, high-level summary of the argument analysis.'),
