@@ -11,7 +11,8 @@ import { ThemeToggle } from "./theme-toggle";
 
 const navItems = [
   { href: "/generator", label: "Generator" },
-  { href: "/analyzer", label: "Analyzer" },
+  { href: "/analyzer", label: "Prompt Analyzer" },
+  { href: "/argument-analyzer", label: "Argument Analyzer" },
   { href: "/examples", label: "Examples" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
