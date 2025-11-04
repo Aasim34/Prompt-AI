@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Wand2, Bot, CheckCircle, XCircle, Lightbulb, Users } from "lucide-react";
+import { Wand2, Bot, CheckCircle, XCircle, Lightbulb, Users, Scale } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import type { AnalyzeArgumentOutput } from "@/ai/flows/analyze-argument";
 import { handleAnalyzeArgument } from "@/app/argument-analyzer/actions";
@@ -24,6 +24,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Progress } from "../ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 const formSchema = z.object({
   text: z
@@ -102,7 +103,7 @@ export function ArgumentAnalyzer() {
   const personaDisplayName = (persona: string) => {
     if (persona.includes('Teacher')) return 'Teacher';
     if (persona.includes('Researcher')) return 'Researcher';
-    if (persona.includes('Public Audience')) return 'Public Audience';
+    if (persona.includes('Public Audience')) return 'Audience';
     if (persona.includes('Professional Decision-Maker')) return 'Decision-Maker';
     return persona;
   };
@@ -167,19 +168,43 @@ export function ArgumentAnalyzer() {
                   <p className="text-muted-foreground bg-secondary/50 p-3 rounded-md border">{analysisResult.mainClaim}</p>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-lg mb-2 flex items-center">
-                    <span className="text-2xl mr-2">🎯</span> Combined Score: {analysisResult.combinedScore}/100
-                  </h3>
-                  <Progress value={analysisResult.combinedScore} className="w-full" />
-                </div>
+                {analysisResult.strengthAnalysis && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2 flex items-center">
+                      <Scale className="h-6 w-6 mr-2" /> Argument Strength Score: {analysisResult.strengthAnalysis.overallScore} / 10
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-3">(Scored purely on logic, clarity, and persuasion — not content morality)</p>
+                     <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Criterion</TableHead>
+                          <TableHead className="text-center">Score</TableHead>
+                          <TableHead>Notes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {analysisResult.strengthAnalysis.criteria.map((c) => (
+                          <TableRow key={c.criterion}>
+                            <TableCell className="font-medium">{c.criterion}</TableCell>
+                            <TableCell className="text-center">{c.score}/10</TableCell>
+                            <TableCell className="text-muted-foreground">{c.notes}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
                 
                 {analysisResult.personaEvaluations && analysisResult.personaEvaluations.length > 0 && (
                  <div>
-                    <h3 className="font-semibold text-lg mb-4 flex items-center">
+                    <h3 className="font-semibold text-lg mb-2 pt-4 flex items-center border-t">
                         <Users className="h-6 w-6 mr-2" /> Multi-Persona Evaluation
                     </h3>
-                    <Tabs defaultValue={analysisResult.personaEvaluations[0].persona}>
+                     <div className="mb-2">
+                        <p className="font-semibold">Combined Persona Score: {analysisResult.combinedScore}/100</p>
+                        <Progress value={analysisResult.combinedScore} className="w-full mt-1" />
+                    </div>
+                    <Tabs defaultValue={analysisResult.personaEvaluations[0].persona} className="pt-2">
                       <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
                         {analysisResult.personaEvaluations.map((item) => (
                            <TabsTrigger key={item.persona} value={item.persona} className="text-xs md:text-sm">
