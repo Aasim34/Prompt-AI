@@ -171,7 +171,7 @@ export function PromptAnalyzer() {
                 
                 <Accordion type="single" collapsible onValueChange={(value) => setShowEnhanced(!!value)}>
                   <AccordionItem value="item-1">
-                    <AccordionTrigger>
+                    <AccordionTrigger asChild>
                       <Button variant="outline" className="w-full">
                         <Sparkles className="mr-2 h-4 w-4" />
                         Show Enhanced Prompt
