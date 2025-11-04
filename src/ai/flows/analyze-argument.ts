@@ -1,9 +1,8 @@
-
 'use server';
 /**
- * @fileOverview Analyzes the logical strength of a given text argument.
+ * @fileOverview Analyzes the logical strength of a given text argument from multiple personas.
  *
- * - analyzeArgument - A function that evaluates an argument and provides a detailed breakdown of its structure and validity.
+ * - analyzeArgument - A function that evaluates an argument and provides a detailed breakdown of its structure and validity from different perspectives.
  * - AnalyzeArgumentInput - The input type for the analyzeArgument function.
  * - AnalyzeArgumentOutput - The return type for the analyzeArgument function.
  */
@@ -16,39 +15,22 @@ const AnalyzeArgumentInputSchema = z.object({
 });
 export type AnalyzeArgumentInput = z.infer<typeof AnalyzeArgumentInputSchema>;
 
-const BreakdownCriterionSchema = z.object({
-  criterion: z.string().describe('The name of the evaluation criterion (e.g., "Claim Clarity").'),
-  score: z.number().describe('The score for this criterion, out of 10.'),
-  notes: z.string().describe('A brief explanation for the score given to this criterion.'),
+const PersonaAnalysisSchema = z.object({
+  persona: z.string().describe("The name of the persona (e.g., 'Teacher / Educator')."),
+  score: z.number().min(0).max(100).describe('The score for this persona, out of 100.'),
+  explanation: z.string().describe('A short explanation for the score given by this persona.'),
+  strengths: z.array(z.string()).describe('A list of strengths from this persona\'s viewpoint.'),
+  weaknesses: z.array(z.string()).describe('A list of weaknesses from this persona\'s viewpoint.'),
+  suggestions: z.array(z.string()).describe('A list of suggested improvements based on this persona\'s evaluation style.'),
 });
 
 const AnalyzeArgumentOutputSchema = z.object({
-  analysisSummary: z
-    .string()
-    .describe('A brief, high-level summary of the argument analysis.'),
-  overallStrength: z
-    .number()
-    .min(0)
-    .max(100)
-    .describe(
-      'A numeric score from 0 to 100 representing the overall strength of the argument.'
-    ),
-  mainClaim: z
-    .string()
-    .describe('The primary claim or thesis of the argument.'),
-  supportingPoints: z
-    .array(z.string())
-    .describe(
-      'A list of the main supporting points, premises, or evidence provided.'
-    ),
-  weaknesses: z
-    .array(z.string())
-    .describe(
-      'A list of identified logical fallacies, weak points, or unsupported claims.'
-    ),
-  breakdown: z.array(BreakdownCriterionSchema).describe("A detailed breakdown of the argument's score based on multiple criteria.")
+  mainClaim: z.string().describe('The primary claim or thesis of the argument.'),
+  combinedScore: z.number().min(0).max(100).describe('The final, combined score from all personas.'),
+  personaEvaluations: z.array(PersonaAnalysisSchema).describe("A detailed breakdown of the argument's score from four different personas."),
 });
 export type AnalyzeArgumentOutput = z.infer<typeof AnalyzeArgumentOutputSchema>;
+
 
 export async function analyzeArgument(
   input: AnalyzeArgumentInput
@@ -60,25 +42,40 @@ const analyzeArgumentPrompt = ai.definePrompt({
   name: 'analyzeArgumentPrompt',
   input: {schema: AnalyzeArgumentInputSchema},
   output: {schema: AnalyzeArgumentOutputSchema},
-  prompt: `You are an expert in logic, rhetoric, and critical thinking. Your task is to analyze the following text and evaluate the strength of its argument.
+  prompt: `You are an expert in multi-perspective critical analysis. Your task is to analyze the following text and evaluate the strength of its argument from four distinct personas.
 
-Follow these steps:
-1.  **Identify the Main Claim:** What is the single most important point the author is trying to make?
-2.  **List the Supporting Points:** Identify all the premises, evidence, and reasons the author provides to support the main claim.
-3.  **Identify Weaknesses & Fallacies:** Scrutinize the argument for any logical fallacies (e.g., ad hominem, straw man, false dilemma), unsupported claims, or weak evidence.
-4.  **Create a Detailed Score Breakdown:** Evaluate the argument against the following criteria, giving a score from 0 to 10 for each, and provide brief notes explaining your reasoning.
-    - **Claim Clarity:** How clear and well-defined is the main claim?
-    - **Evidence Relevance:** Is the evidence provided directly relevant to the claim?
-    - **Logical Flow:** Does the reasoning flow logically from premises to conclusion?
-    - **Supporting Depth:** Is there enough supporting evidence or detail?
-    - **Bias / Emotion:** How much does the argument rely on emotional language or show clear bias? (A lower score means more bias/emotion).
-    - **Language Clarity:** Is the language clear, precise, and well-structured?
-5.  **Calculate Overall Strength:** Based on your breakdown, provide an "overallStrength" score from 0 (very weak, fallacious) to 100 (very strong, well-supported, logical).
-6.  **Summarize Your Analysis:** Write a brief, high-level summary of your findings.
+**Argument Text:**
+"{{{text}}}"
 
-Analyze the following text:
+**Instructions:**
 
-"{{{text}}}"`,
+1.  **Identify the Main Claim:** First, determine the single primary claim or thesis of the argument.
+
+2.  **Multi-Persona Evaluation:** Evaluate the argument from each of the following four personas. For each persona, you must:
+    a.  Assign an individual score out of 100.
+    b.  Provide a short explanation for the score.
+    c.  Highlight specific strengths and weaknesses from that persona's viewpoint.
+    d.  Suggest actionable improvements tailored to that persona's focus.
+
+    **Persona 1: Teacher / Educator**
+    *   **Focus:** Clarity, structure, explanation depth, and learning value.
+    *   **Evaluation:** Is the argument easy to understand? Is it well-organized? Does it teach the reader something valuable?
+
+    **Persona 2: Researcher / Analyst**
+    *   **Focus:** Evidence strength, data accuracy, logical rigor, and critical reasoning.
+    *   **Evaluation:** Is the evidence credible and properly used? Is the logic sound? Are there any fallacies?
+
+    **Persona 3: Public Audience / Citizen**
+    *   **Focus:** Simplicity, relatability, real-world impact, and emotional appeal.
+    *   **Evaluation:** Is the argument engaging and easy for a non-expert to grasp? Does it connect to real-world concerns?
+
+    **Persona 4: Professional Decision-Maker (e.g., Manager, Policy Officer)**
+    *   **Focus:** Practicality, feasibility, potential consequences, and ethical considerations.
+    *   **Evaluation:** Is the argument actionable? What are the risks and benefits of the proposed idea?
+
+3.  **Calculate Combined Score:** Calculate a final "combinedScore" by averaging the scores from the four personas.
+
+4.  **Format the Output:** Structure your response strictly according to the output schema. Ensure there are exactly four evaluations in the 'personaEvaluations' array.`,
 });
 
 const analyzeArgumentFlow = ai.defineFlow(

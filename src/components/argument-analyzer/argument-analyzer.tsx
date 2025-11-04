@@ -16,13 +16,15 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Wand2, Bot } from "lucide-react";
-import { Card, CardContent } from "../ui/card";
+import { Wand2, Bot, CheckCircle, XCircle, Lightbulb, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import type { AnalyzeArgumentOutput } from "@/ai/flows/analyze-argument";
 import { handleAnalyzeArgument } from "@/app/argument-analyzer/actions";
 import { Skeleton } from "../ui/skeleton";
 import { Progress } from "../ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Badge } from "../ui/badge";
 
 const formSchema = z.object({
   text: z
@@ -63,6 +65,40 @@ export function ArgumentAnalyzer() {
       });
     }
   }
+
+  const PersonaCard = ({ evalData }: { evalData: AnalyzeArgumentOutput['personaEvaluations'][0] }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>{evalData.persona}</span>
+          <Badge variant={evalData.score > 75 ? "default" : evalData.score > 50 ? "secondary" : "destructive"}>
+            {evalData.score}/100
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-muted-foreground italic">"{evalData.explanation}"</p>
+        <div>
+          <h4 className="font-semibold mb-2 flex items-center"><CheckCircle className="h-5 w-5 mr-2 text-green-500" />Strengths</h4>
+          <ul className="list-disc list-inside text-muted-foreground space-y-1">
+            {evalData.strengths.map((s, i) => <li key={i}>{s}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-2 flex items-center"><XCircle className="h-5 w-5 mr-2 text-red-500" />Weaknesses</h4>
+          <ul className="list-disc list-inside text-muted-foreground space-y-1">
+            {evalData.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-2 flex items-center"><Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />Suggestions</h4>
+          <ul className="list-disc list-inside text-muted-foreground space-y-1">
+            {evalData.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -118,46 +154,6 @@ export function ArgumentAnalyzer() {
             ) : analysisResult ? (
               <div className="space-y-6">
                 <div>
-                    <h3 className="font-semibold text-lg mb-2 flex items-center">
-                        <span className="text-2xl mr-2">📊</span> Analysis Summary
-                    </h3>
-                    <p className="text-muted-foreground">{analysisResult.analysisSummary}</p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-lg mb-2 flex items-center">
-                    <span className="text-2xl mr-2">🎯</span> Overall Strength: {analysisResult.overallStrength}/100
-                  </h3>
-                  <Progress value={analysisResult.overallStrength} className="w-full" />
-                </div>
-
-                {analysisResult.breakdown && analysisResult.breakdown.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2 flex items-center">
-                        <span className="text-2xl mr-2">📈</span> Strength Breakdown
-                    </h3>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Criterion</TableHead>
-                          <TableHead className="text-center">Score</TableHead>
-                          <TableHead>Notes</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {analysisResult.breakdown.map((item) => (
-                          <TableRow key={item.criterion}>
-                            <TableCell className="font-medium">{item.criterion}</TableCell>
-                            <TableCell className="text-center">{item.score}/10</TableCell>
-                            <TableCell>{item.notes}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-
-                <div>
                   <h3 className="font-semibold text-lg mb-2 flex items-center">
                     <span className="text-2xl mr-2">📌</span> Main Claim
                   </h3>
@@ -166,27 +162,37 @@ export function ArgumentAnalyzer() {
 
                 <div>
                   <h3 className="font-semibold text-lg mb-2 flex items-center">
-                    <span className="text-2xl mr-2">👍</span> Supporting Points
+                    <span className="text-2xl mr-2">🎯</span> Combined Score: {analysisResult.combinedScore}/100
                   </h3>
-                  <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                    {analysisResult.supportingPoints.map((point, i) => <li key={i}>{point}</li>)}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-lg mb-2 flex items-center">
-                    <span className="text-2xl mr-2">👎</span> Weaknesses & Fallacies
-                  </h3>
-                  <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                    {analysisResult.weaknesses.map((point, i) => <li key={i}>{point}</li>)}
-                  </ul>
+                  <Progress value={analysisResult.combinedScore} className="w-full" />
                 </div>
                 
+                {analysisResult.personaEvaluations && analysisResult.personaEvaluations.length > 0 && (
+                 <div>
+                    <h3 className="font-semibold text-lg mb-4 flex items-center">
+                        <Users className="h-6 w-6 mr-2" /> Multi-Persona Evaluation
+                    </h3>
+                    <Tabs defaultValue={analysisResult.personaEvaluations[0].persona}>
+                      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+                        {analysisResult.personaEvaluations.map((item) => (
+                           <TabsTrigger key={item.persona} value={item.persona} className="text-xs md:text-sm">
+                             {item.persona.split('/')[0].trim()}
+                           </TabsTrigger>
+                        ))}
+                      </TabsList>
+                      {analysisResult.personaEvaluations.map((item) => (
+                        <TabsContent key={item.persona} value={item.persona} className="mt-4">
+                          <PersonaCard evalData={item} />
+                        </TabsContent>
+                      ))}
+                    </Tabs>
+                 </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full border border-dashed rounded-lg p-8">
                 <Bot className="h-12 w-12 mb-4" />
-                <p>Your argument analysis will appear here.</p>
+                <p>Your multi-persona argument analysis will appear here.</p>
               </div>
             )}
           </CardContent>
