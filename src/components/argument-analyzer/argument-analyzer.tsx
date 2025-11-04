@@ -22,7 +22,6 @@ import type { AnalyzeArgumentOutput } from "@/ai/flows/analyze-argument";
 import { handleAnalyzeArgument } from "@/app/argument-analyzer/actions";
 import { Skeleton } from "../ui/skeleton";
 import { Progress } from "../ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
 
@@ -99,6 +98,14 @@ export function ArgumentAnalyzer() {
       </CardContent>
     </Card>
   );
+  
+  const personaDisplayName = (persona: string) => {
+    if (persona.includes('Teacher')) return 'Teacher';
+    if (persona.includes('Researcher')) return 'Researcher';
+    if (persona.includes('Public Audience')) return 'Public Audience';
+    if (persona.includes('Professional Decision-Maker')) return 'Decision-Maker';
+    return persona;
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -176,7 +183,7 @@ export function ArgumentAnalyzer() {
                       <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
                         {analysisResult.personaEvaluations.map((item) => (
                            <TabsTrigger key={item.persona} value={item.persona} className="text-xs md:text-sm">
-                             {item.persona.split('/')[0].trim()}
+                             {personaDisplayName(item.persona)}
                            </TabsTrigger>
                         ))}
                       </TabsList>
