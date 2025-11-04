@@ -16,6 +16,12 @@ const AnalyzeArgumentInputSchema = z.object({
 });
 export type AnalyzeArgumentInput = z.infer<typeof AnalyzeArgumentInputSchema>;
 
+const BreakdownCriterionSchema = z.object({
+  criterion: z.string().describe('The name of the evaluation criterion (e.g., "Claim Clarity").'),
+  score: z.number().describe('The score for this criterion, out of 10.'),
+  notes: z.string().describe('A brief explanation for the score given to this criterion.'),
+});
+
 const AnalyzeArgumentOutputSchema = z.object({
   analysisSummary: z
     .string()
@@ -40,6 +46,7 @@ const AnalyzeArgumentOutputSchema = z.object({
     .describe(
       'A list of identified logical fallacies, weak points, or unsupported claims.'
     ),
+  breakdown: z.array(BreakdownCriterionSchema).describe("A detailed breakdown of the argument's score based on multiple criteria.")
 });
 export type AnalyzeArgumentOutput = z.infer<typeof AnalyzeArgumentOutputSchema>;
 
@@ -59,8 +66,15 @@ Follow these steps:
 1.  **Identify the Main Claim:** What is the single most important point the author is trying to make?
 2.  **List the Supporting Points:** Identify all the premises, evidence, and reasons the author provides to support the main claim.
 3.  **Identify Weaknesses & Fallacies:** Scrutinize the argument for any logical fallacies (e.g., ad hominem, straw man, false dilemma), unsupported claims, or weak evidence.
-4.  **Score the Argument:** Based on your analysis, provide an "overallStrength" score from 0 (very weak, fallacious) to 100 (very strong, well-supported, logical).
-5.  **Summarize Your Analysis:** Write a brief summary of your findings.
+4.  **Create a Detailed Score Breakdown:** Evaluate the argument against the following criteria, giving a score from 0 to 10 for each, and provide brief notes explaining your reasoning.
+    - **Claim Clarity:** How clear and well-defined is the main claim?
+    - **Evidence Relevance:** Is the evidence provided directly relevant to the claim?
+    - **Logical Flow:** Does the reasoning flow logically from premises to conclusion?
+    - **Supporting Depth:** Is there enough supporting evidence or detail?
+    - **Bias / Emotion:** How much does the argument rely on emotional language or show clear bias? (A lower score means more bias/emotion).
+    - **Language Clarity:** Is the language clear, precise, and well-structured?
+5.  **Calculate Overall Strength:** Based on your breakdown, provide an "overallStrength" score from 0 (very weak, fallacious) to 100 (very strong, well-supported, logical).
+6.  **Summarize Your Analysis:** Write a brief, high-level summary of your findings.
 
 Analyze the following text:
 

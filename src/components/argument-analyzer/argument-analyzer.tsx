@@ -22,6 +22,7 @@ import type { AnalyzeArgumentOutput } from "@/ai/flows/analyze-argument";
 import { handleAnalyzeArgument } from "@/app/argument-analyzer/actions";
 import { Skeleton } from "../ui/skeleton";
 import { Progress } from "../ui/progress";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 const formSchema = z.object({
   text: z
@@ -129,6 +130,32 @@ export function ArgumentAnalyzer() {
                   </h3>
                   <Progress value={analysisResult.overallStrength} className="w-full" />
                 </div>
+
+                {analysisResult.breakdown && analysisResult.breakdown.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2 flex items-center">
+                        <span className="text-2xl mr-2">📈</span> Strength Breakdown
+                    </h3>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Criterion</TableHead>
+                          <TableHead className="text-center">Score</TableHead>
+                          <TableHead>Notes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {analysisResult.breakdown.map((item) => (
+                          <TableRow key={item.criterion}>
+                            <TableCell className="font-medium">{item.criterion}</TableCell>
+                            <TableCell className="text-center">{item.score}/10</TableCell>
+                            <TableCell>{item.notes}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
 
                 <div>
                   <h3 className="font-semibold text-lg mb-2 flex items-center">
