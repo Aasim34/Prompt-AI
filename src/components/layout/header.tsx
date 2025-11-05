@@ -24,6 +24,7 @@ const navItems = [
   { href: "/generator", label: "Generator" },
   { href: "/analyzer", label: "Prompt Analyzer" },
   { href: "/argument-analyzer", label: "Argument Analyzer" },
+  { href: "/history", label: "History" },
   { href: "/examples", label: "Examples" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },

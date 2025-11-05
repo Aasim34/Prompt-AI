@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -26,6 +27,7 @@ import { handleGeneratePrompt } from "@/app/generator/actions";
 import { PromptOutput } from "./prompt-output";
 import { Wand2 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
+import { useUser } from "@/firebase";
 
 const formSchema = z.object({
   idea: z
@@ -53,6 +55,7 @@ export function PromptGenerator() {
   const [loading, setLoading] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const { toast } = useToast();
+  const { user } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -65,7 +68,7 @@ export function PromptGenerator() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     setGeneratedPrompt("");
-    const result = await handleGeneratePrompt(values);
+    const result = await handleGeneratePrompt(values, user?.uid);
     setLoading(false);
 
     if (result.success && result.prompt) {

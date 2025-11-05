@@ -25,6 +25,7 @@ import { Progress } from "../ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { useUser } from "@/firebase";
 
 const formSchema = z.object({
   text: z
@@ -41,6 +42,7 @@ export function ArgumentAnalyzer() {
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalyzeArgumentOutput | null>(null);
   const { toast } = useToast();
+  const { user } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,7 +54,7 @@ export function ArgumentAnalyzer() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     setAnalysisResult(null);
-    const result = await handleAnalyzeArgument({ text: values.text });
+    const result = await handleAnalyzeArgument({ text: values.text }, user?.uid);
     setLoading(false);
 
     if (result.success && result.analysis) {

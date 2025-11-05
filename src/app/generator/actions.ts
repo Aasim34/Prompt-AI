@@ -1,3 +1,4 @@
+
 "use server";
 
 import {
@@ -9,13 +10,30 @@ import {
   RefineGeneratedPromptInput,
   RefineGeneratedPromptOutput,
 } from "@/ai/flows/refine-generated-prompt";
+import { addDocumentNonBlocking } from "@/firebase";
+import { collection, serverTimestamp } from "firebase/firestore";
+import { initializeFirebase } from "@/firebase";
+
 
 export async function handleGeneratePrompt(
-  input: GenerateInitialPromptInput
+  input: GenerateInitialPromptInput,
+  userId?: string
 ): Promise<{ success: boolean; prompt?: string; error?: string }> {
   try {
     const result = await generateInitialPrompt(input);
     const fullPrompt = `**Goal:** ${input.goalType}\n\n${result.prompt}`;
+    
+    if (userId) {
+      const { firestore } = initializeFirebase();
+      const promptsCollection = collection(firestore, `users/${userId}/prompts`);
+      addDocumentNonBlocking(promptsCollection, {
+        ideaInput: input.idea,
+        outputGoal: input.goalType,
+        generatedPrompt: result.prompt,
+        createdAt: serverTimestamp(),
+      });
+    }
+
     return { success: true, prompt: fullPrompt };
   } catch (e: any) {
     console.error("Error generating prompt:", e);
