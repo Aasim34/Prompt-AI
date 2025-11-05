@@ -6,9 +6,8 @@ import {
   AnalyzeArgumentInput,
   AnalyzeArgumentOutput,
 } from "@/ai/flows/analyze-argument";
-import { addDocumentNonBlocking } from "@/firebase";
 import { getFirebaseAdmin } from "@/firebase/server";
-import { collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 export async function handleAnalyzeArgument(
   input: AnalyzeArgumentInput,
@@ -20,7 +19,7 @@ export async function handleAnalyzeArgument(
     if (userId) {
       const { firestore } = getFirebaseAdmin();
       const analysesCollection = collection(firestore, `users/${userId}/analyses`);
-      addDocumentNonBlocking(analysesCollection, {
+      await addDoc(analysesCollection, {
         ...result,
         textInput: input.text,
         createdAt: serverTimestamp(),
