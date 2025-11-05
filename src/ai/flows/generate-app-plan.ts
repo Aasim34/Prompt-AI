@@ -87,10 +87,10 @@ const generateAppPlanPrompt = ai.definePrompt({
 7.  **API Integrations:** Suggest 1-2 potential third-party **apiIntegrations** that would enhance the app. For each one:
     *   Provide the name of the API and a clear reason explaining what it would be used for.
     *   Provide detailed **setupInstructions**. These steps must include:
-        1.  "Create a `.env.local` file at the root of your project to store the API key securely."
-        2.  "Add your API key to the `.env.local` file, like this: `YOUR_API_NAME_API_KEY='your_secret_key_here'`."
-        3.  "Access the key in your server-side code (e.g., Next.js Server Actions or API routes) using `process.env.YOUR_API_NAME_API_KEY`."
-    *   Provide a crucial **securityWarning**: "NEVER expose this API key in your client-side code. The `.env.local` file is not included in the browser bundle, keeping your key secret. Always use server-side code to make API calls with this key."
+        1.  "Create a \`.env.local\` file at the root of your project to store the API key securely."
+        2.  "Add your API key to the \`.env.local\` file, like this: \`YOUR_API_NAME_API_KEY='your_secret_key_here'\`."
+        3.  "Access the key in your server-side code (e.g., Next.js Server Actions or API routes) using \`process.env.YOUR_API_NAME_API_KEY\`."
+    *   Provide a crucial **securityWarning**: "NEVER expose this API key in your client-side code. The \`.env.local\` file is not included in the browser bundle, keeping your key secret. Always use server-side code to make API calls with this key."
 
 8.  **Deployment Steps (Provide detailed, numbered steps):** Provide a detailed checklist of **deploymentSteps** for getting the app live. Example: "1. Initialize a Git repository and push the code to a provider like GitHub.", "2. Connect the repository to a hosting provider like Vercel or Firebase App Hosting.", "3. Configure all necessary environment variables (e.g., Firebase credentials, API keys) in the hosting provider's dashboard.", "4. Deploy the application to production.", "5. Publish and test Firestore and Storage security rules.".
 
