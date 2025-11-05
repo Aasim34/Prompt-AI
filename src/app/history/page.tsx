@@ -2,9 +2,8 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser, useCollection } from '@/firebase';
+import { useUser, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -54,7 +53,7 @@ export default function HistoryPage() {
   const firestore = useFirestore();
 
   const promptsQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!firestore || !user) return null;
     return query(
         collection(firestore, `users/${user.uid}/prompts`),
         orderBy('createdAt', 'desc')
@@ -62,7 +61,7 @@ export default function HistoryPage() {
   }, [user, firestore]);
 
   const analysesQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!firestore || !user) return null;
     return query(
         collection(firestore, `users/${user.uid}/analyses`),
         orderBy('createdAt', 'desc')
