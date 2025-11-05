@@ -31,6 +31,13 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import jsPDF from 'jspdf';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
 
 const formSchema = z.object({
   description: z
@@ -46,6 +53,7 @@ const formSchema = z.object({
 function AppPlanDisplay({ plan }: { plan: GenerateAppPlanOutput }) {
   const [isCopied, setIsCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
 
   const handleCopy = () => {
     let planText = `
@@ -418,17 +426,29 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
         </div>
         
         {plan.databaseSetup?.length && (
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg flex items-center"><Database className="mr-2 h-5 w-5" />Database Setup</h3>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="database">
+              <AccordionTrigger>
+                  <h3 className="font-semibold text-lg flex items-center"><Database className="mr-2 h-5 w-5" />Database Setup</h3>
+              </AccordionTrigger>
+              <AccordionContent>
                 <InstructionList steps={plan.databaseSetup} />
-            </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
 
         {plan.authenticationSetup?.length && (
-            <div className="space-y-4">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="auth">
+              <AccordionTrigger>
                 <h3 className="font-semibold text-lg flex items-center"><ShieldCheck className="mr-2 h-5 w-5" />Authentication Setup</h3>
+              </AccordionTrigger>
+              <AccordionContent>
                 <InstructionList steps={plan.authenticationSetup} />
-            </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
 
         {plan.apiIntegrations?.length && (
@@ -464,10 +484,16 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
         )}
 
         {plan.deploymentSteps?.length && (
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5" />Deployment Steps</h3>
-                <InstructionList steps={plan.deploymentSteps} />
-            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="deployment">
+                <AccordionTrigger>
+                  <h3 className="font-semibold text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5" />Deployment Steps</h3>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <InstructionList steps={plan.deploymentSteps} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
         )}
 
       </CardContent>
@@ -535,7 +561,7 @@ export default function BuilderPage() {
   return (
     <>
       <PageHeader
-        title="AI App Builder"
+        title="AI App Builder Master Plan"
         subtitle="Describe the full-stack application you want to build, and let AI generate the master plan."
       />
       <div className="container max-w-4xl py-12">
