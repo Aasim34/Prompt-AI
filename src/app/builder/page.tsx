@@ -31,7 +31,6 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 const formSchema = z.object({
   description: z
@@ -47,8 +46,6 @@ const formSchema = z.object({
 function AppPlanDisplay({ plan }: { plan: GenerateAppPlanOutput }) {
   const [isCopied, setIsCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const planRef = useRef<HTMLDivElement>(null);
-
 
   const handleCopy = () => {
     let planText = `
@@ -92,29 +89,204 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
     setTimeout(() => setIsCopied(false), 2000);
   };
   
-  const handleExportPdf = async () => {
-    if (!planRef.current) return;
+  const handleExportPdf = () => {
     setIsExporting(true);
-
     try {
-      const canvas = await html2canvas(planRef.current, {
-        scale: 2, // Higher scale for better resolution
-        useCORS: true,
-        backgroundColor: null,
+      const doc = new jsPDF();
+      let yPos = 20;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const leftMargin = 20;
+      const rightMargin = 20;
+      const contentWidth = doc.internal.pageSize.getWidth() - leftMargin - rightMargin;
+
+      const checkPageBreak = (spaceNeeded: number) => {
+        if (yPos + spaceNeeded > pageHeight - 20) {
+          doc.addPage();
+          yPos = 20;
+        }
+      };
+
+      // Title and Tagline
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text(plan.appName, leftMargin, yPos);
+      yPos += 10;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'italic');
+      doc.text(plan.tagline, leftMargin, yPos);
+      yPos += 15;
+
+      const addSection = (title: string, content: () => void) => {
+        checkPageBreak(20);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text(title, leftMargin, yPos);
+        yPos += 8;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        content();
+        yPos += 10; // Spacing after section
+      };
+
+      // Core Features
+      addSection("Core Features", () => {
+        plan.coreFeatures.forEach(feature => {
+          checkPageBreak(8);
+          doc.text(`- ${feature}`, leftMargin + 5, yPos, { maxWidth: contentWidth - 5 });
+          yPos += 8;
+        });
+      });
+      
+      // Tech Stack
+      addSection("Tech Stack", () => {
+        const stack = [
+          `Frontend: ${plan.techStack.frontend}`,
+          `Backend: ${plan.techStack.backend}`,
+          `Database: ${plan.techStack.database}`,
+          `Authentication: ${plan.techStack.authentication}`,
+        ];
+        stack.forEach(item => {
+            checkPageBreak(8);
+            doc.text(item, leftMargin, yPos);
+            yPos += 8;
+        });
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'px',
-        format: [canvas.width, canvas.height],
+      // Data Models
+      addSection("Data Models", () => {
+        plan.dataModels.forEach(model => {
+          checkPageBreak(12);
+          doc.setFont('helvetica', 'bold');
+          doc.text(model.name, leftMargin, yPos);
+          yPos += 7;
+          doc.setFont('helvetica', 'normal');
+          model.properties.forEach(prop => {
+            checkPageBreak(7);
+            doc.text(`- ${prop}`, leftMargin + 5, yPos);
+            yPos += 7;
+          });
+          yPos += 5;
+        });
       });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save(`${plan.appName.replace(/\s+/g, '_')}-plan.pdf`);
+      // Pages & Routes
+      addSection("Pages & Routes", () => {
+        plan.pages.forEach(page => {
+          checkPageBreak(8);
+          const pageText = `${page.name} (${page.path}): ${page.description}`;
+          const splitText = doc.splitTextToSize(pageText, contentWidth);
+          doc.text(splitText, leftMargin, yPos);
+          yPos += (splitText.length * 5) + 3;
+        });
+      });
+
+      const addInstructionList = (steps: string[]) => {
+         steps.forEach(step => {
+            const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+            const parts: (string | {text: string, url: string})[] = [];
+            let lastIndex = 0;
+            let match;
+
+            while ((match = markdownLinkRegex.exec(step)) !== null) {
+              if (match.index > lastIndex) {
+                parts.push(step.substring(lastIndex, match.index));
+              }
+              parts.push({ text: match[1], url: match[2] });
+              lastIndex = match.index + match[0].length;
+            }
+            if(lastIndex < step.length) {
+              parts.push(step.substring(lastIndex));
+            }
+            
+            checkPageBreak(10);
+
+            const lines = doc.splitTextToSize(step, contentWidth - 5);
+            if (lines.length > 1 && typeof parts[0] === 'string' && parts[0].startsWith('1.')) { // Assuming numbered list
+              doc.text(lines[0], leftMargin, yPos);
+              yPos += 5;
+              for (let i = 1; i < lines.length; i++) {
+                checkPageBreak(5);
+                doc.text(lines[i], leftMargin + 5, yPos);
+                yPos += 5;
+              }
+            } else {
+              let currentX = leftMargin;
+              parts.forEach(part => {
+                if (typeof part === 'string') {
+                  doc.text(part, currentX, yPos);
+                  currentX += doc.getStringUnitWidth(part) * doc.getFontSize() / doc.internal.scaleFactor;
+                } else {
+                  doc.setTextColor(63, 81, 181); // Link color
+                  doc.textWithLink(part.text, currentX, yPos, { url: part.url });
+                  doc.setTextColor(0, 0, 0); // Reset color
+                  currentX += doc.getStringUnitWidth(part.text) * doc.getFontSize() / doc.internal.scaleFactor;
+                }
+              });
+              yPos += 7;
+            }
+         });
+      };
+
+      // Database Setup
+      if (plan.databaseSetup?.length) {
+        addSection("Database Setup", () => addInstructionList(plan.databaseSetup!));
+      }
+      
+      // Authentication Setup
+      if (plan.authenticationSetup?.length) {
+        addSection("Authentication Setup", () => addInstructionList(plan.authenticationSetup!));
+      }
+
+      // API Integrations
+      if (plan.apiIntegrations?.length) {
+        addSection("API Integrations", () => {
+          plan.apiIntegrations!.forEach(api => {
+            checkPageBreak(30);
+            doc.setFont('helvetica', 'bold');
+            doc.text(api.name, leftMargin, yPos);
+            yPos += 7;
+            doc.setFont('helvetica', 'normal');
+            const reasonLines = doc.splitTextToSize(`Reason: ${api.reason}`, contentWidth);
+            doc.text(reasonLines, leftMargin, yPos);
+            yPos += (reasonLines.length * 5) + 3;
+
+            yPos += 5;
+            doc.setFont('helvetica', 'bold');
+            doc.text("Setup Instructions", leftMargin, yPos);
+            yPos += 7;
+            doc.setFont('helvetica', 'normal');
+            addInstructionList(api.setupInstructions);
+
+            yPos += 5;
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(220, 53, 69); // Destructive color
+            doc.text("Security Warning", leftMargin, yPos);
+            yPos += 7;
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0,0,0);
+            const warningLines = doc.splitTextToSize(api.securityWarning, contentWidth);
+            doc.text(warningLines, leftMargin, yPos);
+            yPos += (warningLines.length * 5) + 3;
+
+            yPos += 10;
+          });
+        });
+      }
+
+      // Deployment Steps
+      if (plan.deploymentSteps?.length) {
+        addSection("Deployment Steps", () => addInstructionList(plan.deploymentSteps!));
+      }
+
+
+      doc.save(`${plan.appName.replace(/\s+/g, '_')}-plan.pdf`);
     } catch (error) {
       console.error("Failed to export PDF", error);
-      // You might want to show a toast message to the user here
+      toast({
+        title: "Export Failed",
+        description: "An error occurred while generating the PDF.",
+        variant: "destructive",
+      });
     } finally {
       setIsExporting(false);
     }
@@ -157,7 +329,7 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
 
 
   return (
-    <Card className="prompt-glow" ref={planRef}>
+    <Card className="prompt-glow">
         <CardHeader>
             <div className="flex justify-between items-start">
                 <div>
@@ -416,3 +588,5 @@ export default function BuilderPage() {
     </>
   );
 }
+
+    
