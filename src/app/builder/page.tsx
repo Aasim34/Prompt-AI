@@ -25,7 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { handleGenerateAppPlan } from './actions';
 import type { GenerateAppPlanOutput } from '@/ai/flows/generate-app-plan';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, Check, Code, Copy, FileText, Layers, ListChecks, Wand2 } from 'lucide-react';
+import { Bot, Check, Code, Copy, FileText, Layers, ListChecks, Wand2, Database, ShieldCheck, Aperture, UploadCloud } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -45,7 +45,7 @@ function AppPlanDisplay({ plan }: { plan: GenerateAppPlanOutput }) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
-    const planText = `
+    let planText = `
 App Name: ${plan.appName}
 Tagline: ${plan.tagline}
 
@@ -66,11 +66,31 @@ ${m.properties.map(p => `  - ${p}`).join('\n')}
 
 Pages:
 ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
-    `;
+`;
+
+    if (plan.databaseSetup?.length) {
+        planText += `\nDatabase Setup:\n${plan.databaseSetup.map(s => `- ${s}`).join('\n')}`;
+    }
+    if (plan.authenticationSetup?.length) {
+        planText += `\nAuthentication Setup:\n${plan.authenticationSetup.map(s => `- ${s}`).join('\n')}`;
+    }
+    if (plan.apiIntegrations?.length) {
+        planText += `\nAPI Integrations:\n${plan.apiIntegrations.map(api => `- ${api.name}: ${api.reason}`).join('\n')}`;
+    }
+     if (plan.deploymentSteps?.length) {
+        planText += `\nDeployment Steps:\n${plan.deploymentSteps.map(s => `- ${s}`).join('\n')}`;
+    }
+
     navigator.clipboard.writeText(planText.trim());
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
+
+  const InstructionList = ({ steps }: { steps: string[] }) => (
+    <ul className="list-decimal list-inside bg-secondary/50 p-4 rounded-md space-y-3">
+        {steps.map((step, i) => <li key={i}>{step}</li>)}
+    </ul>
+  );
 
   return (
     <Card className="prompt-glow">
@@ -126,7 +146,7 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                          <ul className="list-disc list-inside text-muted-foreground">
-                           {model.properties.map((prop, i) => <li key={i}><Badge variant="outline" className="mr-2">{prop.split(':')[1].trim()}</Badge> {prop.split(':')[0]}</li>)}
+                           {model.properties.map((prop, i) => <li key={i}><Badge variant="outline" className="mr-2">{prop.split(':')[1]?.trim()}</Badge> {prop.split(':')[0]}</li>)}
                         </ul>
                     </CardContent>
                 </Card>
@@ -155,6 +175,42 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
                 </TableBody>
             </Table>
         </div>
+        
+        {plan.databaseSetup?.length && (
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg flex items-center"><Database className="mr-2 h-5 w-5" />Database Setup</h3>
+                <InstructionList steps={plan.databaseSetup} />
+            </div>
+        )}
+
+        {plan.authenticationSetup?.length && (
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg flex items-center"><ShieldCheck className="mr-2 h-5 w-5" />Authentication Setup</h3>
+                <InstructionList steps={plan.authenticationSetup} />
+            </div>
+        )}
+
+        {plan.apiIntegrations?.length && (
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg flex items-center"><Aperture className="mr-2 h-5 w-5" />API Integrations</h3>
+                <div className="space-y-3">
+                    {plan.apiIntegrations.map(api => (
+                        <Card key={api.name} className="p-4">
+                            <p className="font-semibold">{api.name}</p>
+                            <p className="text-muted-foreground">{api.reason}</p>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {plan.deploymentSteps?.length && (
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5" />Deployment Steps</h3>
+                <InstructionList steps={plan.deploymentSteps} />
+            </div>
+        )}
+
       </CardContent>
     </Card>
   );
@@ -209,6 +265,10 @@ export default function BuilderPage() {
         <div className="space-y-4">
             <Skeleton className="h-8 w-1/4" />
             <Skeleton className="h-24 w-full" />
+        </div>
+         <div className="space-y-4">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-16 w-full" />
         </div>
     </div>
   )
