@@ -25,10 +25,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { handleGenerateAppPlan } from './actions';
 import type { GenerateAppPlanOutput } from '@/ai/flows/generate-app-plan';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, Check, Code, Copy, FileText, Layers, ListChecks, Wand2, Database, ShieldCheck, Aperture, UploadCloud } from 'lucide-react';
+import { Bot, Check, Code, Copy, FileText, Layers, ListChecks, Wand2, Database, ShieldCheck, Aperture, UploadCloud, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const formSchema = z.object({
   description: z
@@ -191,17 +192,35 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
         )}
 
         {plan.apiIntegrations?.length && (
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg flex items-center"><Aperture className="mr-2 h-5 w-5" />API Integrations</h3>
-                <div className="space-y-3">
-                    {plan.apiIntegrations.map(api => (
-                        <Card key={api.name} className="p-4">
-                            <p className="font-semibold">{api.name}</p>
-                            <p className="text-muted-foreground">{api.reason}</p>
-                        </Card>
-                    ))}
-                </div>
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg flex items-center">
+              <Aperture className="mr-2 h-5 w-5" />
+              API Integrations
+            </h3>
+            <div className="space-y-6">
+              {plan.apiIntegrations.map((api) => (
+                <Card key={api.name}>
+                    <CardHeader>
+                        <CardTitle>{api.name}</CardTitle>
+                        <CardDescription>{api.reason}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <h4 className="font-semibold mb-2">Setup Instructions</h4>
+                            <InstructionList steps={api.setupInstructions} />
+                        </div>
+                        <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle>Security Warning</AlertTitle>
+                            <AlertDescription>
+                                {api.securityWarning}
+                            </AlertDescription>
+                        </Alert>
+                    </CardContent>
+                </Card>
+              ))}
             </div>
+          </div>
         )}
 
         {plan.deploymentSteps?.length && (

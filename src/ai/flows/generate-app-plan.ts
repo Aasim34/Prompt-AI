@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Generates a detailed architectural plan for a full-stack application based on a user's idea.
@@ -29,6 +30,8 @@ const PageSchema = z.object({
 const ApiIntegrationSchema = z.object({
     name: z.string().describe("The name of the suggested third-party API (e.g., 'Stripe', 'Google Maps')."),
     reason: z.string().describe("The reason why this API is recommended for the app."),
+    setupInstructions: z.array(z.string()).describe("Step-by-step instructions on how to integrate the API, including where to store API keys."),
+    securityWarning: z.string().describe("A critical warning about keeping the API key secret and not exposing it on the client-side."),
 });
 
 const GenerateAppPlanOutputSchema = z.object({
@@ -81,7 +84,14 @@ const generateAppPlanPrompt = ai.definePrompt({
     *   **Analyze the app idea** to determine if it requires a database or user authentication.
     *   If a database is needed, provide a detailed, step-by-step **databaseSetup** guide. Example: "1. Create a new Firebase project and enable Cloud Firestore.", "2. Define collections such as 'users', 'posts', etc.", "3. Configure Firestore security rules to ensure proper data access control (e.g., users can only write to their own documents).".
     *   If authentication is needed, provide a detailed, step-by-step **authenticationSetup** guide. Example: "1. Enable desired authentication providers (e.g., Email/Password, Google) in the Firebase console.", "2. Implement sign-up and sign-in UI components in the Next.js app.", "3. Use the Firebase Client SDK to handle user authentication state and protect routes.".
-7.  **API Integrations:** Suggest 1-2 potential third-party **apiIntegrations** that would enhance the app. Provide the name of the API and a clear reason explaining what it would be used for. If none are obvious, you can omit this.
+7.  **API Integrations:** Suggest 1-2 potential third-party **apiIntegrations** that would enhance the app. For each one:
+    *   Provide the name of the API and a clear reason explaining what it would be used for.
+    *   Provide detailed **setupInstructions**. These steps must include:
+        1.  "Create a `.env.local` file at the root of your project to store the API key securely."
+        2.  "Add your API key to the `.env.local` file, like this: `YOUR_API_NAME_API_KEY='your_secret_key_here'`."
+        3.  "Access the key in your server-side code (e.g., Next.js Server Actions or API routes) using `process.env.YOUR_API_NAME_API_KEY`."
+    *   Provide a crucial **securityWarning**: "NEVER expose this API key in your client-side code. The `.env.local` file is not included in the browser bundle, keeping your key secret. Always use server-side code to make API calls with this key."
+
 8.  **Deployment Steps (Provide detailed, numbered steps):** Provide a detailed checklist of **deploymentSteps** for getting the app live. Example: "1. Initialize a Git repository and push the code to a provider like GitHub.", "2. Connect the repository to a hosting provider like Vercel or Firebase App Hosting.", "3. Configure all necessary environment variables (e.g., Firebase credentials, API keys) in the hosting provider's dashboard.", "4. Deploy the application to production.", "5. Publish and test Firestore and Storage security rules.".
 
 Structure your entire response strictly according to the output schema. Ensure all fields are populated correctly with detailed, actionable information.`,
