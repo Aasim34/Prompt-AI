@@ -10,29 +10,14 @@ import {
   RefineGeneratedPromptInput,
   RefineGeneratedPromptOutput,
 } from "@/ai/flows/refine-generated-prompt";
-import { getFirebaseAdmin } from "@/firebase/server";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-
 
 export async function handleGeneratePrompt(
-  input: GenerateInitialPromptInput,
-  userId?: string
+  input: GenerateInitialPromptInput
 ): Promise<{ success: boolean; prompt?: string; error?: string }> {
   try {
     const result = await generateInitialPrompt(input);
     const fullPrompt = `**Goal:** ${input.goalType}\n\n${result.prompt}`;
     
-    if (userId) {
-      const { firestore } = getFirebaseAdmin();
-      const promptsCollection = collection(firestore, `users/${userId}/prompts`);
-      await addDoc(promptsCollection, {
-        ideaInput: input.idea,
-        outputGoal: input.goalType,
-        generatedPrompt: result.prompt,
-        createdAt: serverTimestamp(),
-      });
-    }
-
     return { success: true, prompt: fullPrompt };
   } catch (e: any) {
     console.error("Error generating prompt:", e);

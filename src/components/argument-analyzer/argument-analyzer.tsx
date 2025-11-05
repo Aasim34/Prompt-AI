@@ -25,7 +25,8 @@ import { Progress } from "../ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { useUser } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 const formSchema = z.object({
   text: z
@@ -43,6 +44,7 @@ export function ArgumentAnalyzer() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeArgumentOutput | null>(null);
   const { toast } = useToast();
   const { user } = useUser();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,11 +56,29 @@ export function ArgumentAnalyzer() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     setAnalysisResult(null);
-    const result = await handleAnalyzeArgument({ text: values.text }, user?.uid);
+    const result = await handleAnalyzeArgument({ text: values.text });
     setLoading(false);
 
     if (result.success && result.analysis) {
       setAnalysisResult(result.analysis);
+      if (user && firestore) {
+        try {
+          const analysesCollection = collection(firestore, `users/${user.uid}/analyses`);
+          await addDoc(analysesCollection, {
+            ...result.analysis,
+            textInput: values.text,
+            createdAt: serverTimestamp(),
+          });
+        } catch (e) {
+            console.error("Failed to save analysis to Firestore:", e);
+            // Optionally, inform the user that saving failed.
+            toast({
+                title: "Save Failed",
+                description: "Your analysis was generated but could not be saved to your history.",
+                variant: "destructive"
+            });
+        }
+      }
     } else {
       toast({
         title: "Error",

@@ -27,7 +27,8 @@ import { handleGeneratePrompt } from "@/app/generator/actions";
 import { PromptOutput } from "./prompt-output";
 import { Wand2 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
-import { useUser } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 const formSchema = z.object({
   idea: z
@@ -56,6 +57,7 @@ export function PromptGenerator() {
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const { toast } = useToast();
   const { user } = useUser();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,11 +70,29 @@ export function PromptGenerator() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     setGeneratedPrompt("");
-    const result = await handleGeneratePrompt(values, user?.uid);
+    const result = await handleGeneratePrompt(values);
     setLoading(false);
 
     if (result.success && result.prompt) {
       setGeneratedPrompt(result.prompt);
+      if (user && firestore) {
+        try {
+          const promptsCollection = collection(firestore, `users/${user.uid}/prompts`);
+          await addDoc(promptsCollection, {
+            ideaInput: values.idea,
+            outputGoal: values.goalType,
+            generatedPrompt: result.prompt,
+            createdAt: serverTimestamp(),
+          });
+        } catch(e) {
+          console.error("Failed to save prompt to Firestore:", e);
+           toast({
+                title: "Save Failed",
+                description: "Your prompt was generated but could not be saved to your history.",
+                variant: "destructive"
+            });
+        }
+      }
     } else {
       toast({
         title: "Error",
