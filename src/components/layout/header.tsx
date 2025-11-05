@@ -27,7 +27,7 @@ const navItems = [
   { href: "/history", label: "History" },
   { href: "/examples", label: "Examples" },
   { href: "/about", label: "About" },
-  { href: "/builder", label: "Builder" },
+  { href: "/builder", label: "Plan" },
 ];
 
 function UserNav() {
