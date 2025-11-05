@@ -50,6 +50,7 @@ const goalTypes = [
   "Business Idea Prompt",
   "Content Creator Prompt",
   "AI Agent Prompt",
+  "Image Generation Prompt",
 ];
 
 export function PromptGenerator() {
@@ -138,7 +139,7 @@ export function PromptGenerator() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a goal for your prompt" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         {goalTypes.map((type) => (
