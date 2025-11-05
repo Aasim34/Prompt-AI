@@ -2,12 +2,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Bot } from "lucide-react";
+import { Menu, Bot, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
+import { useUser } from "@/firebase";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { getAuth } from "firebase/auth";
 
 const navItems = [
   { href: "/generator", label: "Generator" },
@@ -17,6 +28,67 @@ const navItems = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
+
+function UserNav() {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  const auth = getAuth();
+
+  if (isUserLoading) {
+    return <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />;
+  }
+
+  if (!user) {
+    return (
+      <Button asChild>
+        <Link href="/login">Login</Link>
+      </Button>
+    );
+  }
+  
+  const handleSignOut = () => {
+    auth.signOut();
+    router.push('/');
+  };
+
+  const getInitials = (name?: string | null) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    return name.substring(0, 2);
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+            <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 
 export function Header() {
   const pathname = usePathname();
@@ -89,9 +161,9 @@ export function Header() {
           </Link>
           <nav className="flex items-center gap-2">
             <ThemeToggle />
-            <Button className="hidden md:inline-flex">
-              <Link href="/generator">Get Started</Link>
-            </Button>
+            <div className="hidden md:inline-flex">
+              <UserNav />
+            </div>
           </nav>
         </div>
       </div>
