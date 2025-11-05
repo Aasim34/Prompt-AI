@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,11 +25,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { handleGenerateAppPlan } from './actions';
 import type { GenerateAppPlanOutput } from '@/ai/flows/generate-app-plan';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, Check, Code, Copy, FileText, Layers, ListChecks, Wand2, Database, ShieldCheck, Aperture, UploadCloud, AlertTriangle } from 'lucide-react';
+import { Bot, Check, Code, Copy, FileText, Layers, ListChecks, Wand2, Database, ShieldCheck, Aperture, UploadCloud, AlertTriangle, Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const formSchema = z.object({
   description: z
@@ -44,6 +46,9 @@ const formSchema = z.object({
 
 function AppPlanDisplay({ plan }: { plan: GenerateAppPlanOutput }) {
   const [isCopied, setIsCopied] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const planRef = useRef<HTMLDivElement>(null);
+
 
   const handleCopy = () => {
     let planText = `
@@ -86,6 +91,35 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
+  
+  const handleExportPdf = async () => {
+    if (!planRef.current) return;
+    setIsExporting(true);
+
+    try {
+      const canvas = await html2canvas(planRef.current, {
+        scale: 2, // Higher scale for better resolution
+        useCORS: true,
+        backgroundColor: null,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`${plan.appName.replace(/\s+/g, '_')}-plan.pdf`);
+    } catch (error) {
+      console.error("Failed to export PDF", error);
+      // You might want to show a toast message to the user here
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
 
   const InstructionList = ({ steps }: { steps: string[] }) => {
     const renderStep = (step: string) => {
@@ -123,16 +157,21 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
 
 
   return (
-    <Card className="prompt-glow">
+    <Card className="prompt-glow" ref={planRef}>
         <CardHeader>
             <div className="flex justify-between items-start">
                 <div>
                     <CardTitle className="text-2xl">{plan.appName}</CardTitle>
                     <CardDescription>{plan.tagline}</CardDescription>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleCopy}>
-                  {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={handleCopy} disabled={isExporting}>
+                        {isCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                     <Button variant="ghost" size="icon" onClick={handleExportPdf} disabled={isExporting}>
+                        {isExporting ? <span className="animate-spin h-4 w-4">⚙️</span> : <Download className="h-4 w-4" />}
+                    </Button>
+                </div>
             </div>
         </CardHeader>
       <CardContent className="space-y-8">
@@ -377,5 +416,3 @@ export default function BuilderPage() {
     </>
   );
 }
-
-    
