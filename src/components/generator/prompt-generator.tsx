@@ -139,7 +139,7 @@ export function PromptGenerator() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a goal for your prompt" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {goalTypes.map((type) => (
