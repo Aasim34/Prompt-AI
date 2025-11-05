@@ -7,9 +7,8 @@ import {
   AnalyzeArgumentOutput,
 } from "@/ai/flows/analyze-argument";
 import { addDocumentNonBlocking } from "@/firebase";
-import { collection, getFirestore } from "firebase/firestore";
-import { initializeFirebase } from "@/firebase";
-import { serverTimestamp } from "firebase/firestore";
+import { collection, serverTimestamp } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
 export async function handleAnalyzeArgument(
   input: AnalyzeArgumentInput,
@@ -19,7 +18,9 @@ export async function handleAnalyzeArgument(
     const result = await analyzeArgument(input);
 
     if (userId) {
-      const { firestore } = initializeFirebase();
+      // We get the firestore instance on the server here.
+      // NOTE: This assumes server-side Firebase initialization is configured.
+      const firestore = getFirestore();
       const analysesCollection = collection(firestore, `users/${userId}/analyses`);
       addDocumentNonBlocking(analysesCollection, {
         ...result,
