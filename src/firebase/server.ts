@@ -11,11 +11,13 @@ function getFirebaseAdmin() {
   
   let firebaseApp;
   try {
+    // This will only work if GOOGLE_APPLICATION_CREDENTIALS is set
     firebaseApp = initializeApp();
   } catch (e) {
     if (process.env.NODE_ENV === "production") {
       console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
     }
+    // Fallback for local development
     firebaseApp = initializeApp(firebaseConfig);
   }
 
@@ -23,10 +25,12 @@ function getFirebaseAdmin() {
 }
 
 function getSdks(firebaseApp: FirebaseApp) {
+  const auth = getAuth(firebaseApp);
+  const firestore = getFirestore(firebaseApp);
   return {
     firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
+    auth,
+    firestore
   };
 }
 
