@@ -161,9 +161,7 @@ export function Header() {
           </Link>
           <nav className="flex items-center gap-2">
             <ThemeToggle />
-            <div className="hidden md:inline-flex">
-              <UserNav />
-            </div>
+            <UserNav />
           </nav>
         </div>
       </div>
