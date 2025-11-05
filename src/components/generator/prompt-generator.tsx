@@ -85,13 +85,13 @@ export function PromptGenerator() {
             generatedPrompt: result.prompt,
             createdAt: serverTimestamp(),
           });
-        } catch(e) {
+        } catch (e) {
           console.error("Failed to save prompt to Firestore:", e);
-           toast({
-                title: "Save Failed",
-                description: "Your prompt was generated but could not be saved to your history.",
-                variant: "destructive"
-            });
+          toast({
+            title: "Save Failed",
+            description: "Your prompt was generated but could not be saved to your history.",
+            variant: "destructive",
+          });
         }
       }
     } else {
