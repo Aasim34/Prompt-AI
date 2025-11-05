@@ -87,11 +87,40 @@ ${plan.pages.map(p => `- ${p.name} (${p.path}): ${p.description}`).join('\n')}
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const InstructionList = ({ steps }: { steps: string[] }) => (
-    <ul className="list-decimal list-inside bg-secondary/50 p-4 rounded-md space-y-3">
-        {steps.map((step, i) => <li key={i}>{step}</li>)}
-    </ul>
-  );
+  const InstructionList = ({ steps }: { steps: string[] }) => {
+    const renderStep = (step: string) => {
+      const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+      const parts = step.split(markdownLinkRegex);
+
+      return parts.map((part, index) => {
+        if (index % 3 === 1) { // This is the link text
+          const url = parts[index + 1];
+          return (
+            <a
+              key={index}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline hover:text-primary/80"
+            >
+              {part}
+            </a>
+          );
+        }
+        if (index % 3 === 2) { // This is the URL, which we've already used
+          return null;
+        }
+        return part; // This is regular text
+      });
+    };
+    
+    return (
+      <ol className="list-decimal list-inside bg-secondary/50 p-4 rounded-md space-y-3">
+          {steps.map((step, i) => <li key={i} className="leading-relaxed">{renderStep(step)}</li>)}
+      </ol>
+    );
+  };
+
 
   return (
     <Card className="prompt-glow">
@@ -348,3 +377,5 @@ export default function BuilderPage() {
     </>
   );
 }
+
+    
