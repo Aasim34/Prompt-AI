@@ -9,11 +9,9 @@ import {
   CollectionReference,
   DocumentReference,
   SetOptions,
-  getFirestore,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {FirestorePermissionError} from '@/firebase/errors';
-import { initializeFirebase } from '.';
 
 /**
  * Initiates a setDoc operation for a document reference.
@@ -40,13 +38,6 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
  * Returns the Promise for the new doc ref, but typically not awaited by caller.
  */
 export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
-  let firestore;
-  try {
-    firestore = getFirestore();
-  } catch (e) {
-    firestore = initializeFirebase().firestore;
-  }
-
   const promise = addDoc(colRef, data)
     .catch(error => {
       errorEmitter.emit(

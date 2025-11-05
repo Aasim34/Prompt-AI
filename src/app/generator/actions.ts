@@ -10,7 +10,8 @@ import {
   RefineGeneratedPromptInput,
   RefineGeneratedPromptOutput,
 } from "@/ai/flows/refine-generated-prompt";
-import { addDocumentNonBlocking, initializeFirebase } from "@/firebase";
+import { addDocumentNonBlocking } from "@/firebase";
+import { getFirebaseAdmin } from "@/firebase/server";
 import { collection, serverTimestamp } from "firebase/firestore";
 
 
@@ -23,7 +24,7 @@ export async function handleGeneratePrompt(
     const fullPrompt = `**Goal:** ${input.goalType}\n\n${result.prompt}`;
     
     if (userId) {
-      const { firestore } = initializeFirebase();
+      const { firestore } = getFirebaseAdmin();
       const promptsCollection = collection(firestore, `users/${userId}/prompts`);
       addDocumentNonBlocking(promptsCollection, {
         ideaInput: input.idea,

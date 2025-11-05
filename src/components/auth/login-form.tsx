@@ -24,7 +24,6 @@ import {
 import { useAuth } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { Chrome } from "lucide-react";
-import { Separator } from "../ui/separator";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
@@ -81,6 +80,7 @@ export function LoginForm() {
     } catch (error: any) {
       // Don't show an error toast if the user simply closes the popup.
       if (error.code === 'auth/popup-closed-by-user') {
+        setGoogleLoading(false);
         return;
       }
       toast({
