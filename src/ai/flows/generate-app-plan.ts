@@ -61,7 +61,7 @@ const generateAppPlanPrompt = ai.definePrompt({
   name: 'generateAppPlanPrompt',
   input: {schema: GenerateAppPlanInputSchema},
   output: {schema: GenerateAppPlanOutputSchema},
-  prompt: `You are an expert full-stack software architect. A user has provided a description of an application they want to build. Your task is to generate a comprehensive architectural plan for this application.
+  prompt: `You are an expert full-stack software architect. A user has provided a description of an application they want to build. Your task is to generate a comprehensive, detailed, and step-by-step architectural plan for this application.
 
 **User's App Description:**
 "{{{description}}}"
@@ -77,14 +77,14 @@ const generateAppPlanPrompt = ai.definePrompt({
     *   **Authentication:** Firebase Authentication
 4.  **Data Models:** Define the necessary data models (schemas) for the database. For each model, list its essential properties and their types.
 5.  **Pages/Routes:** Outline the main pages or routes the application will have, including their URL path and a short description.
-6.  **Backend Setup Analysis:**
-    *   **Analyze the app idea** to determine if it requires a database (e.g., for storing user data, content) or user authentication (e.g., for user accounts, profiles).
-    *   If a database is needed, provide high-level **databaseSetup** steps. Example: "1. Create a new Firebase project.", "2. Enable Firestore in the Firebase console.", "3. Define security rules for data access." Do not write code.
-    *   If authentication is needed, provide high-level **authenticationSetup** steps. Example: "1. Enable an auth provider (e.g., Google, Email/Password) in Firebase.", "2. Implement the login UI component.", "3. Use Firebase SDK to handle user sign-in and sign-out." Do not write code.
-7.  **API Integrations:** Suggest 1-2 potential third-party **apiIntegrations** that would enhance the app, and provide a brief reason for each. If none are obvious, you can omit this.
-8.  **Deployment Steps:** Provide a short checklist of **deploymentSteps** for getting the app live. Example: "1. Connect GitHub repository.", "2. Set up environment variables.", "3. Deploy to a hosting provider like Firebase App Hosting or Vercel."
+6.  **Backend Setup Analysis (Provide detailed, numbered steps):**
+    *   **Analyze the app idea** to determine if it requires a database or user authentication.
+    *   If a database is needed, provide a detailed, step-by-step **databaseSetup** guide. Example: "1. Create a new Firebase project and enable Cloud Firestore.", "2. Define collections such as 'users', 'posts', etc.", "3. Configure Firestore security rules to ensure proper data access control (e.g., users can only write to their own documents).".
+    *   If authentication is needed, provide a detailed, step-by-step **authenticationSetup** guide. Example: "1. Enable desired authentication providers (e.g., Email/Password, Google) in the Firebase console.", "2. Implement sign-up and sign-in UI components in the Next.js app.", "3. Use the Firebase Client SDK to handle user authentication state and protect routes.".
+7.  **API Integrations:** Suggest 1-2 potential third-party **apiIntegrations** that would enhance the app. Provide the name of the API and a clear reason explaining what it would be used for. If none are obvious, you can omit this.
+8.  **Deployment Steps (Provide detailed, numbered steps):** Provide a detailed checklist of **deploymentSteps** for getting the app live. Example: "1. Initialize a Git repository and push the code to a provider like GitHub.", "2. Connect the repository to a hosting provider like Vercel or Firebase App Hosting.", "3. Configure all necessary environment variables (e.g., Firebase credentials, API keys) in the hosting provider's dashboard.", "4. Deploy the application to production.", "5. Publish and test Firestore and Storage security rules.".
 
-Structure your entire response strictly according to the output schema. Ensure all fields are populated correctly.`,
+Structure your entire response strictly according to the output schema. Ensure all fields are populated correctly with detailed, actionable information.`,
 });
 
 const generateAppPlanFlow = ai.defineFlow(
