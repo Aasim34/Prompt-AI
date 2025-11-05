@@ -9,7 +9,7 @@ export default function Home() {
       <section className="w-full py-20 md:py-32 lg:py-40 bg-background">
         <div className="container px-4 md:px-6 text-center">
           <div className="max-w-3xl mx-auto space-y-6">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl font-headline bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
               PromptForge AI
             </h1>
             <p className="text-lg text-muted-foreground md:text-xl">
