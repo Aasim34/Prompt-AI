@@ -27,7 +27,7 @@ function HistoryItemCard({ item, type }: { item: any; type: 'prompt' | 'analysis
       <Card>
         <Accordion type="single" collapsible>
           <AccordionItem value="item-1" className="border-b-0">
-            <AccordionTrigger className="p-6 hover:no-underline">
+            <AccordionTrigger className="p-6 hover:no-underline text-left w-full">
               <div className="flex justify-between items-start w-full">
                 <div className="space-y-1 text-left">
                   <CardTitle className="text-lg flex items-center">
