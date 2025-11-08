@@ -26,7 +26,7 @@ const navItems = [
   { href: "/argument-analyzer", label: "Argument Analyzer" },
   { href: "/history", label: "History" },
   { href: "/examples", label: "Examples" },
-  { href: "/about", label: "About" },
+  { href: "/vibe", label: "Vibe" },
   { href: "/builder", label: "Plan" },
 ];
 
